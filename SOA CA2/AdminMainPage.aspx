@@ -1,7 +1,6 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminMainPage.aspx.cs" Inherits="SOA_CA2.AdminMainPage" %>
 
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Admin Main Page</title>
@@ -58,13 +57,12 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <!--Menu -->
         <div class="menu-container">
+            <!-- Student Management  -->
             <div class="menu-title">Student Management</div>
-
-            <!-- Student List -->
-            <asp:GridView ID="gvStudents" runat="server" AutoGenerateColumns="False" OnRowEditing="gvStudents_RowEditing" 
-                OnRowUpdating="gvStudents_RowUpdating" OnRowDeleting="gvStudents_RowDeleting" OnRowCancelingEdit="gvStudents_RowCancelingEdit" 
+            <asp:GridView ID="gvStudents" runat="server" AutoGenerateColumns="False" 
+                OnRowEditing="gvStudents_RowEditing" OnRowUpdating="gvStudents_RowUpdating" 
+                OnRowDeleting="gvStudents_RowDeleting" OnRowCancelingEdit="gvStudents_RowCancelingEdit" 
                 CssClass="table">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" ReadOnly="True" />
@@ -76,7 +74,7 @@
                 </Columns>
             </asp:GridView>
 
-            <!-- Update Section -->
+            <!-- Student Add  -->
             <div class="form-group">
                 <label for="name">Name:</label>
                 <asp:TextBox ID="txtName" runat="server" CssClass="form-control"></asp:TextBox>
@@ -95,7 +93,33 @@
             </div>
             <asp:Button ID="btnAddStudent" runat="server" Text="Add Student" CssClass="menu-button" OnClick="btnAddStudent_Click" />
         </div>
+
+        <div class="menu-container">
+            <!-- Course Management Section -->
+            <div class="menu-title">Course Management</div>
+            <asp:GridView ID="gvCourses" runat="server" AutoGenerateColumns="False" 
+                OnRowEditing="gvCourses_RowEditing" OnRowUpdating="gvCourses_RowUpdating" 
+                OnRowDeleting="gvCourses_RowDeleting" OnRowCancelingEdit="gvCourses_RowCancelingEdit" 
+                CssClass="table">
+                <Columns>
+                    <asp:BoundField DataField="Id" HeaderText="ID" ReadOnly="True" />
+                    <asp:BoundField DataField="Course" HeaderText="Course" />
+                    <asp:BoundField DataField="Credit" HeaderText="Credit" />
+                    <asp:CommandField ShowEditButton="True" ShowDeleteButton="True" />
+                </Columns>
+            </asp:GridView>
+
+            <!-- Course Add  -->
+            <div class="form-group">
+                <label for="course">Course Name:</label>
+                <asp:TextBox ID="txtCourse" runat="server" CssClass="form-control"></asp:TextBox>
+            </div>
+            <div class="form-group">
+                <label for="credit">Credits:</label>
+                <asp:TextBox ID="credit" runat="server" CssClass="form-control"></asp:TextBox>
+            </div>
+            <asp:Button ID="btnAddCourse" runat="server" Text="Add Course" CssClass="menu-button" OnClick="btnAddCourse_Click" />
+        </div>
     </form>
 </body>
 </html>
-

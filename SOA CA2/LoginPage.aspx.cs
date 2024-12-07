@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.Data.Odbc;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace SOA_CA2
 {
@@ -15,38 +12,71 @@ namespace SOA_CA2
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-            
             string enteredUsername = username.Text.Trim();
             string enteredPassword = password.Text.Trim();
-            string role = admin.Checked ? "Administrator" : "Student";
+            string role = student.Checked ? "Student" : "Administrator";
 
             if (IsValidUser(enteredUsername, enteredPassword, role))
             {
                 if (role == "Administrator")
                 {
-                    Response.Redirect("Admin Main Page.aspx");
+                    Response.Redirect("AdminMainPage.aspx");
                 }
                 else
                 {
-                    Response.Redirect("Student Page.aspx");
+                    Response.Redirect("StudentPage.aspx");
                 }
             }
             else
             {
-                //alert for invalid login
+                // alert invalid login
                 Response.Write("<script>alert('Invalid username, password, or role.');</script>");
             }
         }
 
         private bool IsValidUser(string username, string password, string role)
         {
-           
-            if (role == "Administrator" && username == "admin" && password == "adminpass")
-                return true;
-            if (role == "Student" && username == "student" && password == "studentpass")
-                return true;
+            string connString = System.Configuration.ConfigurationManager.ConnectionStrings["MySqlConnection"].ToString();
+            string query = "";
 
-            return false;
+            if (role == "Administrator")
+            {
+                query = "SELECT * FROM admin WHERE username = ? AND password = ?";
+            }
+            else if (role == "Student")
+            {
+                query = "SELECT * FROM student WHERE username = ? AND password = ?";
+            }
+
+            using (OdbcConnection conn = new OdbcConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OdbcCommand cmd = new OdbcCommand(query, conn))
+                    {
+                       
+                        cmd.Parameters.AddWithValue("?", username);
+                        cmd.Parameters.AddWithValue("?", password);
+
+                        OdbcDataReader reader = cmd.ExecuteReader();
+
+                        if (reader.HasRows)
+                        {
+                            return true; 
+                        }
+                        else
+                        {
+                            return false; 
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    return false;
+                }
+            }
         }
     }
 }

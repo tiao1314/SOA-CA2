@@ -13,5 +13,11 @@ namespace SOA_CA2
         {
 
         }
+
+        protected void btnAddStudent_Click(object sender, EventArgs e)
+        {
+            
+            Response.Write("Student button clickedx");
+        }
     }
 }
