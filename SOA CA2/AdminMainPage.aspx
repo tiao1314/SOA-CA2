@@ -65,6 +65,7 @@
                 OnRowDeleting="gvStudents_RowDeleting" OnRowCancelingEdit="gvStudents_RowCancelingEdit" 
                 CssClass="table">
                 <Columns>
+                    <asp:BoundField DataField="Username" HeaderText="Username" ReadOnly="True"/>
                     <asp:BoundField DataField="Id" HeaderText="ID" ReadOnly="True" />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField DataField="Age" HeaderText="Age" />
@@ -81,16 +82,20 @@
             </div>
             <div class="form-group">
                 <label for="age">Age:</label>
-                <asp:TextBox ID="age" runat="server" CssClass="form-control"></asp:TextBox>
+                <asp:TextBox ID="txtage" runat="server" CssClass="form-control"></asp:TextBox>
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <asp:TextBox ID="email" runat="server" CssClass="form-control"></asp:TextBox>
+                <asp:TextBox ID="txtemail" runat="server" CssClass="form-control"></asp:TextBox>
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
-                <asp:TextBox ID="password" runat="server" TextMode="Password" CssClass="form-control"></asp:TextBox>
+                <asp:TextBox ID="txtpassword" runat="server" TextMode="Password" CssClass="form-control"></asp:TextBox>
             </div>
+            <div class="form-group">
+    <label for="username">Username:</label>
+    <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control"></asp:TextBox>
+</div>
             <asp:Button ID="btnAddStudent" runat="server" Text="Add Student" CssClass="menu-button" OnClick="btnAddStudent_Click" />
         </div>
 
@@ -116,7 +121,7 @@
             </div>
             <div class="form-group">
                 <label for="credit">Credits:</label>
-                <asp:TextBox ID="credit" runat="server" CssClass="form-control"></asp:TextBox>
+                <asp:TextBox ID="txtcredit" runat="server" CssClass="form-control"></asp:TextBox>
             </div>
             <asp:Button ID="btnAddCourse" runat="server" Text="Add Course" CssClass="menu-button" OnClick="btnAddCourse_Click" />
         </div>
