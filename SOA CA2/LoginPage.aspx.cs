@@ -16,6 +16,7 @@ namespace SOA_CA2
             string enteredPassword = password.Text.Trim();
             string role = student.Checked ? "Student" : "Administrator";
 
+            // check user creds
             if (IsValidUser(enteredUsername, enteredPassword, role))
             {
                 if (role == "Administrator")
@@ -24,28 +25,41 @@ namespace SOA_CA2
                 }
                 else
                 {
-                    Response.Redirect("StudentPage.aspx");
+                    // get studentid and put in a session
+                    int studentId = GetStudentId(enteredUsername);
+                    if (studentId > 0)
+                    {
+                        Session["StudentId"] = studentId;
+                        Response.Redirect("StudentPage.aspx");
+                    }
+                    else
+                    {
+                        
+                        Response.Write("<script>alert('Failed to retrieve student ID.');</script>");
+                    }
                 }
             }
             else
             {
-                // alert invalid login
+               
                 Response.Write("<script>alert('Invalid username, password, or role.');</script>");
             }
         }
 
+        // check the user creds within the database
         private bool IsValidUser(string username, string password, string role)
         {
             string connString = System.Configuration.ConfigurationManager.ConnectionStrings["MySqlConnection"].ToString();
             string query = "";
 
+            
             if (role == "Administrator")
             {
-                query = "SELECT * FROM admin WHERE username = ? AND password = ?";
+                query = "SELECT * FROM admin WHERE username =? AND password =?";
             }
             else if (role == "Student")
             {
-                query = "SELECT * FROM student WHERE username = ? AND password = ?";
+                query = "SELECT * FROM student WHERE username =? AND password =?";
             }
 
             using (OdbcConnection conn = new OdbcConnection(connString))
@@ -55,20 +69,13 @@ namespace SOA_CA2
                     conn.Open();
                     using (OdbcCommand cmd = new OdbcCommand(query, conn))
                     {
-                       
                         cmd.Parameters.AddWithValue("?", username);
                         cmd.Parameters.AddWithValue("?", password);
 
                         OdbcDataReader reader = cmd.ExecuteReader();
 
-                        if (reader.HasRows)
-                        {
-                            return true; 
-                        }
-                        else
-                        {
-                            return false; 
-                        }
+                        // Check if any rows are returned
+                        return reader.HasRows;
                     }
                 }
                 catch (Exception ex)
@@ -77,6 +84,36 @@ namespace SOA_CA2
                     return false;
                 }
             }
+        }
+
+        // get student id with username
+        private int GetStudentId(string username)
+        {
+            string connString = System.Configuration.ConfigurationManager.ConnectionStrings["MySqlConnection"].ToString();
+            string query = "SELECT id FROM student WHERE username =?";
+            using (OdbcConnection conn = new OdbcConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OdbcCommand cmd = new OdbcCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("?", username);
+                        object result = cmd.ExecuteScalar();
+
+                        
+                        if (result != null && int.TryParse(result.ToString(), out int studentId))
+                        {
+                            return studentId;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                }
+            }
+            return 0;
         }
     }
 }
