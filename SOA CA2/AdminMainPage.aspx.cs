@@ -8,23 +8,22 @@ namespace SOA_CA2
 {
     public partial class AdminMainPage : System.Web.UI.Page
     {
-        // Connection string from the web.config file
+        // database connection string
         private string connString = System.Configuration.ConfigurationManager.ConnectionStrings["MySqlConnection"].ToString();
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                // Load students and courses on page load
-                LoadStudents();
-                LoadCourses();
+                LoadStudents(); 
+                LoadCourses(); 
             }
         }
 
-        // Load students from database into GridView
+        // get students from database
         private void LoadStudents()
         {
-            string query = "SELECT * FROM student"; // Fetch all students from the database
+            string query = "SELECT * FROM student";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -41,15 +40,15 @@ namespace SOA_CA2
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
         }
 
-        // Load courses from database into GridView
+        // get courses from database
         private void LoadCourses()
         {
-            string query = "SELECT * FROM course"; // Fetch all courses from the database
+            string query = "SELECT * FROM course";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -66,22 +65,21 @@ namespace SOA_CA2
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
         }
 
-        // Add student to the database
+        // Add a new student
         protected void btnAddStudent_Click(object sender, EventArgs e)
         {
             string name = txtName.Text.Trim();
-            string age = txtage.Text.Trim();
-            string email = txtemail.Text.Trim();
-            string password = txtpassword.Text.Trim();
+            string age = txtAge.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string password = txtPassword.Text.Trim();
             string username = txtUsername.Text.Trim();
 
-            string query = "INSERT INTO student (Name, Age, Email, Password, Username) VALUES (?, ?, ?, ?, ?)";
-
+            string query = "INSERT INTO student (Name, Age, Email, Password, Username) VALUES (?,?,?,?,?)";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -96,26 +94,24 @@ namespace SOA_CA2
                         cmd.Parameters.AddWithValue("?", username);
 
                         cmd.ExecuteNonQuery();
-                        // Reload students after adding a new one
                         LoadStudents();
-                        Response.Write("<script>alert('Student added successfully.');</script>");
+                        ShowSuccessMessage("Student added successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
         }
 
-        // Add course to the database
+        // Add a new course
         protected void btnAddCourse_Click(object sender, EventArgs e)
         {
             string course = txtCourse.Text.Trim();
-            string credit = txtcredit.Text.Trim();
+            string credit = txtCredit.Text.Trim();
 
-            string query = "INSERT INTO course (Course, Credit) VALUES (?, ?)";
-
+            string query = "INSERT INTO course (Course, Credit) VALUES (?,?)";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -127,37 +123,27 @@ namespace SOA_CA2
                         cmd.Parameters.AddWithValue("?", credit);
 
                         cmd.ExecuteNonQuery();
-                        // Reload courses after adding a new one
                         LoadCourses();
-                        Response.Write("<script>alert('Course added successfully.');</script>");
+                        ShowSuccessMessage("Course added successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
         }
 
-        // Editing student row in GridView
-        protected void gvStudents_RowEditing(object sender, GridViewEditEventArgs e)
+        // Update student info
+        protected void btnModifyStudent_Click(object sender, EventArgs e)
         {
-            gvStudents.EditIndex = e.NewEditIndex;
-            LoadStudents();
+            string username = modifyStudentUsername.Text.Trim();
+            string name = modifyStudentName.Text.Trim();
+            string age = modifyStudentAge.Text.Trim();
+            string email = modifyStudentEmail.Text.Trim();
+            string password = modifyStudentPassword.Text.Trim();
 
-        }
-
-        // Updating student details
-        protected void gvStudents_RowUpdating(object sender, GridViewUpdateEventArgs e)
-        {
-            string username = gvStudents.DataKeys[e.RowIndex].Values["Username"].ToString();
-            string name = ((TextBox)gvStudents.Rows[e.RowIndex].FindControl("txtNameEdit")).Text.Trim();
-            string age = ((TextBox)gvStudents.Rows[e.RowIndex].FindControl("txtAgeEdit")).Text.Trim();
-            string email = ((TextBox)gvStudents.Rows[e.RowIndex].FindControl("txtEmailEdit")).Text.Trim();
-            string password = ((TextBox)gvStudents.Rows[e.RowIndex].FindControl("txtPasswordEdit")).Text.Trim();
-
-            string query = "UPDATE student SET Name = ?, Age = ?, Email = ?, Password = ? WHERE Username = ?";
-
+            string query = "UPDATE student SET Name =?, Age =?, Email =?, Password =? WHERE Username =?";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -172,25 +158,69 @@ namespace SOA_CA2
                         cmd.Parameters.AddWithValue("?", username);
 
                         cmd.ExecuteNonQuery();
-                        gvStudents.EditIndex = -1;
                         LoadStudents();
-                        Response.Write("<script>alert('Student updated successfully.');</script>");
+                        ShowSuccessMessage("Student updated successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
         }
 
-        // Delete student record
+        // Update course info
+        protected void btnModifyCourse_Click(object sender, EventArgs e)
+        {
+            if (!int.TryParse(modifyCourseId.Text.Trim(), out int courseId))
+            {
+                ShowErrorMessage("Invalid Course ID. Please enter a valid integer value.");
+                return;
+            }
+            string course = modifyCourseName.Text.Trim();
+            string credit = modifyCourseCredit.Text.Trim();
+
+            string query = "UPDATE course SET Course =?, Credit =? WHERE Id =?";
+            using (OdbcConnection conn = new OdbcConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OdbcCommand cmd = new OdbcCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("?", course);
+                        cmd.Parameters.AddWithValue("?", credit);
+                        cmd.Parameters.AddWithValue("?", courseId);
+
+                        cmd.ExecuteNonQuery();
+                        LoadCourses();
+                        ShowSuccessMessage("Course updated successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowErrorMessage(ex.Message);
+                }
+            }
+        }
+
+        
+        private void ShowErrorMessage(string message)
+        {
+            Response.Write("<script>alert('Error: " + message + "');</script>");
+        }
+
+        
+        private void ShowSuccessMessage(string message)
+        {
+            Response.Write("<script>alert('" + message + "');</script>");
+        }
+
+        // Delete student from the database
         protected void gvStudents_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             int studentId = Convert.ToInt32(gvStudents.DataKeys[e.RowIndex].Values["Id"].ToString());
-
-            string query = "DELETE FROM student WHERE Id = ?";
-
+            string query = "DELETE FROM student WHERE Id =?";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -201,63 +231,21 @@ namespace SOA_CA2
                         cmd.Parameters.AddWithValue("?", studentId);
                         cmd.ExecuteNonQuery();
                         LoadStudents();
-                        Response.Write("<script>alert('Student deleted successfully.');</script>");
+                        ShowSuccessMessage("Student deleted successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
         }
 
-        // Editing course 
-        protected void gvCourses_RowEditing(object sender, GridViewEditEventArgs e)
-        {
-            gvCourses.EditIndex = e.NewEditIndex;
-            LoadCourses();
-        }
-
-        // Updating course detail
-        protected void gvCourses_RowUpdating(object sender, GridViewUpdateEventArgs e)
-        {
-            int courseId = Convert.ToInt32(gvCourses.DataKeys[e.RowIndex].Values["Id"].ToString());
-            string course = ((TextBox)gvCourses.Rows[e.RowIndex].FindControl("txtCourseEdit")).Text.Trim();
-            string credit = ((TextBox)gvCourses.Rows[e.RowIndex].FindControl("txtCreditEdit")).Text.Trim();
-
-            string query = "UPDATE course SET Course = ?, Credit = ? WHERE Id = ?";
-
-            using (OdbcConnection conn = new OdbcConnection(connString))
-            {
-                try
-                {
-                    conn.Open();
-                    using (OdbcCommand cmd = new OdbcCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("?", course);
-                        cmd.Parameters.AddWithValue("?", credit);
-                        cmd.Parameters.AddWithValue("?", courseId);
-
-                        cmd.ExecuteNonQuery();
-                        gvCourses.EditIndex = -1;
-                        LoadCourses();
-                        Response.Write("<script>alert('Course updated successfully.');</script>");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
-                }
-            }
-        }
-
-        // Deleting course row
+        // Delete course from the database
         protected void gvCourses_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             int courseId = Convert.ToInt32(gvCourses.DataKeys[e.RowIndex].Values["Id"].ToString());
-
-            string query = "DELETE FROM course WHERE Id = ?";
-
+            string query = "DELETE FROM course WHERE Id =?";
             using (OdbcConnection conn = new OdbcConnection(connString))
             {
                 try
@@ -268,27 +256,14 @@ namespace SOA_CA2
                         cmd.Parameters.AddWithValue("?", courseId);
                         cmd.ExecuteNonQuery();
                         LoadCourses();
-                        Response.Write("<script>alert('Course deleted successfully.');</script>");
+                        ShowSuccessMessage("Course deleted successfully.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    ShowErrorMessage(ex.Message);
                 }
             }
-        }
-
-        // Cancel editing student or course
-        protected void gvStudents_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-        {
-            gvStudents.EditIndex = -1;
-            LoadStudents();
-        }
-
-        protected void gvCourses_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-        {
-            gvCourses.EditIndex = -1;
-            LoadCourses();
         }
     }
 }
