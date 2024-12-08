@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.Data.Odbc;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace SOA_CA2
 {
@@ -15,38 +12,108 @@ namespace SOA_CA2
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-            // Use unique names for variables to avoid conflicts with control IDs
             string enteredUsername = username.Text.Trim();
             string enteredPassword = password.Text.Trim();
-            string role = admin.Checked ? "Administrator" : "Student";
+            string role = student.Checked ? "Student" : "Administrator";
 
+            // check user creds
             if (IsValidUser(enteredUsername, enteredPassword, role))
             {
                 if (role == "Administrator")
                 {
-                    Response.Redirect("Admin Main Page.aspx");
+                    Response.Redirect("AdminMainPage.aspx");
                 }
                 else
                 {
-                    Response.Redirect("Student Page.aspx");
+                    // get studentid and put in a session
+                    int studentId = GetStudentId(enteredUsername);
+                    if (studentId > 0)
+                    {
+                        Session["StudentId"] = studentId;
+                        Response.Redirect("StudentPage.aspx");
+                    }
+                    else
+                    {
+                        
+                        Response.Write("<script>alert('Failed to retrieve student ID.');</script>");
+                    }
                 }
             }
             else
             {
-                // Show an alert for invalid login
+               
                 Response.Write("<script>alert('Invalid username, password, or role.');</script>");
             }
         }
 
+        // check the user creds within the database
         private bool IsValidUser(string username, string password, string role)
         {
-            // Replace this with actual validation logic
-            if (role == "Administrator" && username == "admin" && password == "adminpass")
-                return true;
-            if (role == "Student" && username == "student" && password == "studentpass")
-                return true;
+            string connString = System.Configuration.ConfigurationManager.ConnectionStrings["MySqlConnection"].ToString();
+            string query = "";
 
-            return false;
+            
+            if (role == "Administrator")
+            {
+                query = "SELECT * FROM admin WHERE username =? AND password =?";
+            }
+            else if (role == "Student")
+            {
+                query = "SELECT * FROM student WHERE username =? AND password =?";
+            }
+
+            using (OdbcConnection conn = new OdbcConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OdbcCommand cmd = new OdbcCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("?", username);
+                        cmd.Parameters.AddWithValue("?", password);
+
+                        OdbcDataReader reader = cmd.ExecuteReader();
+
+                        // Check if any rows are returned
+                        return reader.HasRows;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                    return false;
+                }
+            }
+        }
+
+        // get student id with username
+        private int GetStudentId(string username)
+        {
+            string connString = System.Configuration.ConfigurationManager.ConnectionStrings["MySqlConnection"].ToString();
+            string query = "SELECT id FROM student WHERE username =?";
+            using (OdbcConnection conn = new OdbcConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OdbcCommand cmd = new OdbcCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("?", username);
+                        object result = cmd.ExecuteScalar();
+
+                        
+                        if (result != null && int.TryParse(result.ToString(), out int studentId))
+                        {
+                            return studentId;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Response.Write("<script>alert('Error: " + ex.Message + "');</script>");
+                }
+            }
+            return 0;
         }
     }
 }
